@@ -60,23 +60,54 @@ fun main() {
         }
     }
 
+    fun calculateScore(ownMove: Move, opponentMove: Move): Int {
+        val matchResult = calculateResult(ownMove, opponentMove)
+        val matchResultPoints = matchResultPoints(matchResult)
+
+        val ownMovePoints = calcOwnMovePoints(ownMove)
+
+        return matchResultPoints + ownMovePoints
+    }
+
     fun part1(input: List<String>): Int {
         val points = input.map { it.split(" ") }.sumOf {
             val opponentMove = opponentMoveFactory(it[0])
             val ownMove = ownMoveFactory(it[1])
 
-            val ownMovePoints = calcOwnMovePoints(ownMove!!)
-
-            val matchResult = calculateResult(ownMove, opponentMove!!)
-            val matchResultPoints = matchResultPoints(matchResult)
-
-            matchResultPoints + ownMovePoints
+            calculateScore(ownMove!!, opponentMove!!)
         }
         return points
     }
 
+    fun desiredResultFactory(instruction: String): MatchResult? {
+        return when(instruction) {
+            "X" -> MatchResult.LOSE
+            "Y" -> MatchResult.DRAW
+            "Z" -> MatchResult.WIN
+            else -> null
+        }
+    }
+
+    fun getMoveForDesiredResult(opponentMove: Move, desiredResult: MatchResult): Move? {
+        // Brute-force approach to avoid having inverse logic doubled up
+        for (ownMove in Move.values()) {
+            if (calculateResult(ownMove, opponentMove) == desiredResult) {
+                return ownMove
+            }
+        }
+        return null
+    }
+
     fun part2(input: List<String>): Int {
-        return 0
+        val points = input.map { it.split(" ") }.sumOf {
+            val opponentMove = opponentMoveFactory(it[0])
+            val desiredResult = desiredResultFactory(it[1])
+
+            val ownMove = getMoveForDesiredResult(opponentMove!!, desiredResult!!)
+
+            calculateScore(ownMove!!, opponentMove)
+        }
+        return points
     }
 
     // test if implementation meets criteria from the description, like:
